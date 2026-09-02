@@ -1,0 +1,417 @@
+!
+!  ROMS/TOMS Ice Model Input parameters.
+!
+!==============================================================================
+!  Copyright (c) 2002-2021 The ROMS/TOMS Group                                !
+!========================================================= Hernan G. Arango ===
+!                                                              Chuning Wang   !
+! Input parameters can be entered in ANY order, provided that the parameter   !
+! KEYWORD (usually, upper case) is typed correctly followed by "="  or "=="   !
+! symbols. Any comment lines are allowed and must begin with an exclamation   !
+! mark (!) in column one.  Comments may appear to the right of a parameter    !
+! specification to improve documentation.  Comments are ignored during        !
+! reading.  Blank lines are also allowed and ignored. Continuation lines in   !
+! a parameter specification are allowed if preceded by a backslash (\).  In   !
+! some instances, more than one value is required for a parameter.  If fewer  !
+! values are provided, the last value is assigned for the entire parameter    !
+! array.  The multiplication symbol (*),  without blank spaces in between,    !
+! is allowed for a parameter specification. For example, in two grids nested  !
+! application:                                                                !
+!                                                                             !
+!    AKT_BAK == 2*1.0d-6  2*5.0d-6              ! m2/s                        !
+!                                                                             !
+! indicates that the first two entries of array AKT_BAK,  in fortran column-  !
+! major order, will have the same value of "1.0d-6" for grid 1,  whereas the  !
+! next two entries will have the same value of "5.0d-6" for grid 2.           !
+!                                                                             !
+! In multiple levels of nesting or multiple connected domains step-ups,       !
+! "Ngrids" entries are expected for some of these parameters. In such case,   !
+! the order of the entries for a parameter is critical. It must follow the    !
+! same order (1:Ngrids) as in the state variable declaration. The USER may    !
+! follow the above guidelines for specifying his/her values. These parameters !
+! are marked by "==" plural symbol after the KEYWORD.                         !
+!                                                                             !
+!==============================================================================
+!
+! Switch to control the computation of ice within nested and/or multiple
+! connected grids.
+
+           Lice == T
+
+! Set ice lateral boundary conditions keyword. Notice that a value is
+! expected for each boundary segment per nested grid for each state variable.
+!
+! Each tracer variable requires [1:4,1:NAT+NPT,Ngrids] values. Otherwise,
+! [1:4,1:Ngrids] values are expected for other variables. The boundary
+! order is: 1=west, 2=south, 3=east, and 4=north. That is, anticlockwise
+! starting at the western boundary.
+!
+! The keyword is case insensitive and usually has three characters. However,
+! it is possible to have compound keywords, if applicable. For example, the
+! keyword "RadNud" implies radiation boundary condition with nudging. This
+! combination is usually used in active/passive radiation conditions.
+!
+!   Keyword    Lateral Boundary Condition Type
+!
+!   Cla        Clamped                                _____N_____     j=Mm
+!   Clo        Closed                                |     4     |
+!   Gra        Gradient                              |           |
+!   Nes        Nested (refinement)                 1 W           E 3
+!   Nud        Nudging                               |           |
+!   Per        Periodic                              |_____S_____|
+!   Rad        Radiation                                   2          j=1
+!   Mix        Mixed (clamped/gradient)             i=1         i=Lm
+!
+!                    W       S       E       N
+!                    e       o       a       o
+!                    s       u       s       r
+!                    t       t       t       t
+!                            h               h
+!
+!                    1       2       3       4
+
+   LBC(isUice)  ==   Clo     Per     Clo     Per     ! ice U-momentum
+   LBC(isVice)  ==   Clo     Per     Clo     Per     ! ice V-momentum
+   LBC(isAice)  ==   Clo     Per     Clo     Per     ! ice concentration
+   LBC(isHice)  ==   Clo     Per     Clo     Per     ! ice/snow thickness
+   LBC(isTice)  ==   Clo     Per     Clo     Per     ! ice temperature
+   LBC(isIsig)  ==   Clo     Per     Clo     Per     ! ice stress
+
+! Maximum number of iterations to achieve convergence of the nonlinear
+! ice dynamics solution
+
+          NSTRS == 1
+
+! Number of elastic time steps per viscous step in EVP dynamics
+
+           NEVP == 60
+
+! Density of sea ice [kg/m3]
+
+         RHOICE == 900.d0
+
+! Ice-water bulk drag coefficient (nondimensional).
+
+           CDIW == 7.5d-3
+
+! Air-ice bulk drag coefficient (nondimensional).
+
+           CDAI == 3.0d-3
+
+! Density of air [kg/m3]
+
+        RHO_AIR = 1.267d0
+
+! Density of dry snow [kg/m3]
+
+    RHOSNOW_DRY == 330.d0
+
+! Density of wet snow [kg/m3]
+
+    RHOSNOW_WET == 450.d0
+
+! Ice strength coefficient [N/m2]
+
+          PSTAR == 5.0d+03
+
+! Ice strength coefficient in quadratic form [N/m]
+
+        PSTAR_E == 1.4d+03
+
+! Ice strength exponential weighting coefficient on concentration
+! (nondimensional)
+
+!        ASTREN == 20.d0  ! For linear ice strength coefficient
+         ASTREN == 20.d0  ! For quadratic ice strength coefficient
+
+! Maximum shear strength [N/m2]
+
+        ZETAMAX == 1.0d+14
+
+! Minimum shear strength [N/m2]
+
+        ZETAMIN == 0.d0
+
+! Ellipticity squared of yield curve (nondimensional)
+
+       ELLIP_SQ == 4.d0
+
+! Mohr-Coulomb stress angle [degrees]
+
+         ALPHAI == 45.d0
+
+! Tolerance against zero-divide
+
+            TOL = 1.d-16
+
+! Minimum average ice thickness [m]
+
+          MIN_H == 0.00d0
+
+! Minimum ice concentration (nondimensional)
+
+          MIN_A == 1.00d-30
+
+! Maximum ice concentration (nondimensional)
+
+          MAX_A == 1.0d0
+
+! Ice-water turning angle [degrees]
+
+      STRESSANG = 0.d0
+
+! tunable parameters for Lemieux landfast ice
+
+          LF_K1 = 8.0d0
+          LF_K2 = 15.0d0
+          LF_U0 = 5.0e-5
+
+! Logical switches for ice climatology and nudging
+
+         LmiCLM == F
+         LaiCLM == F
+         LsiCLM == F
+    LnudgeMICLM == F
+    LnudgeAICLM == F
+    LnudgeSICLM == F
+
+! Iceshelf Ustar scaling factor
+
+        GAMMA_U == 1.0d0
+
+! Iceshelf Ustar minimum value.
+! 8.0d-6 for diffusion only, 1.0d-3 for diffusion + tidal forcing
+
+      USTAR_MIN == 8.0d-6
+
+! Logical switches for iceshelf melt water passive tracers
+
+     LtracerIce == T       ! dye_01, ...        inert passive tracers
+
+! Logical switches for ice freezing passive tracers (High Salinity Water)
+
+     LtracerFrz == T       ! dye_01, ...        inert passive tracers
+
+! Logical switches (TRUE/FALSE) to activate writing of ice prognostic
+! variables into HISTORY output file.
+
+Hout(idIuice)   == T
+Hout(idIvice)   == T
+Hout(idIuiceE)  == T
+Hout(idIviceN)  == T
+Hout(idIaice)   == T
+Hout(idIhice)   == T
+Hout(idIhsno)   == T
+Hout(idIagei)   == T
+Hout(idItice)   == T
+Hout(idItmid)   == T
+Hout(idIt2ic)   == T
+Hout(idIsg11)   == T
+Hout(idIsg12)   == T
+Hout(idIsg22)   == T
+Hout(idIutau)   == T
+Hout(idImchu)   == T
+Hout(idIt0mk)   == T
+Hout(idIs0mk)   == T
+Hout(idImflx)   == T
+Hout(idIwfr)    == T
+Hout(idIwai)    == T
+Hout(idIwao)    == T
+Hout(idIwio)    == T
+Hout(idIwro)    == T
+Hout(idIwdiv)   == T
+Hout(idIalbO)   == T
+Hout(idIalbI)   == T
+Hout(idIfrsw)   == T
+Hout(idIqswi)   == T
+Hout(idIqlwi)   == T
+Hout(idIqlai)   == T
+Hout(idIqsei)   == T
+Hout(idIqswl)   == T
+Hout(idIqlwl)   == T
+Hout(idIqlwa)   == T
+Hout(idIqswa)   == T
+Hout(idIqswo)   == T
+Hout(idIqao)    == T
+Hout(idIqai)    == T
+Hout(idIqio)    == T
+Hout(idIqi2)    == T
+Hout(idIsao)    == T
+Hout(idIsio)    == T
+Hout(idIwsni)   == T
+Hout(idIsMr)    == T
+Hout(idIsTs)    == T
+Hout(idIsUs)    == T
+Hout(idIsTb)    == T
+Hout(idIsSb)    == T
+Hout(idIsDrft)  == T
+Hout(idIsSOFs)  == T
+Hout(idIsSOFh)  == T
+
+! Logical switches (TRUE/FALSE) to activate writing of ice prognostic
+! variables into AVERAGES output file.
+
+Aout(idIuice)   == T
+Aout(idIvice)   == T
+Aout(idIuiceE)  == T
+Aout(idIviceN)  == T
+Aout(idIaice)   == T
+Aout(idIhice)   == T
+Aout(idIhsno)   == T
+Aout(idIagei)   == T
+Aout(idItice)   == T
+Aout(idItmid)   == T
+Aout(idIt2ic)   == T
+Aout(idIsg11)   == T
+Aout(idIsg12)   == T
+Aout(idIsg22)   == T
+Aout(idIutau)   == T
+Aout(idImchu)   == T
+Aout(idIt0mk)   == T
+Aout(idIs0mk)   == T
+Aout(idImflx)   == T
+Aout(idIwfr)    == T
+Aout(idIwai)    == T
+Aout(idIwao)    == T
+Aout(idIwio)    == T
+Aout(idIwro)    == T
+Aout(idIwdiv)   == T
+Aout(idIalbO)   == T
+Aout(idIalbI)   == T
+Aout(idIfrsw)   == T
+Aout(idIqswi)   == T
+Aout(idIqlwi)   == T
+Aout(idIqlai)   == T
+Aout(idIqsei)   == T
+Aout(idIqswl)   == T
+Aout(idIqlwl)   == T
+Aout(idIqlwa)   == T
+Aout(idIqswa)   == T
+Aout(idIqswo)   == T
+Aout(idIqao)    == T
+Aout(idIqai)    == T
+Aout(idIqio)    == T
+Aout(idIqi2)    == T
+Aout(idIsao)    == T
+Aout(idIsio)    == T
+Aout(idIwsni)   == T
+Aout(idIsMr)    == T
+Aout(idIsTs)    == T
+Aout(idIsUs)    == T
+Aout(idIsTb)    == T
+Aout(idIsSb)    == T
+Aout(idIsDrft)  == T
+Aout(idIsSOFs)  == T
+Aout(idIsSOFh)  == T
+
+! Logical switches (TRUE/FALSE) to activate writing of ice prognostic
+! variables into QUICKSAVE output file.
+
+Qout(idIuice)   == T
+Qout(idIvice)   == T
+Qout(idIuiceE)  == T
+Qout(idIviceN)  == T
+Qout(idIaice)   == T
+Qout(idIhice)   == T
+Qout(idIhsno)   == T
+Qout(idIagei)   == T
+Qout(idItice)   == T
+Qout(idItmid)   == T
+Qout(idIt2ic)   == T
+Qout(idIsg11)   == T
+Qout(idIsg12)   == T
+Qout(idIsg22)   == T
+Qout(idIutau)   == T
+Qout(idImchu)   == T
+Qout(idIt0mk)   == T
+Qout(idIs0mk)   == T
+Qout(idImflx)   == T
+Qout(idIwfr)    == T
+Qout(idIwai)    == T
+Qout(idIwao)    == T
+Qout(idIwio)    == T
+Qout(idIwro)    == T
+Qout(idIwdiv)   == T
+Qout(idIalbO)   == T
+Qout(idIalbI)   == T
+Qout(idIfrsw)   == T
+Qout(idIqswi)   == T
+Qout(idIqlwi)   == T
+Qout(idIqlai)   == T
+Qout(idIqsei)   == T
+Qout(idIqswl)   == T
+Qout(idIqlwl)   == T
+Qout(idIqlwa)   == T
+Qout(idIqswa)   == T
+Qout(idIqswo)   == T
+Qout(idIqao)    == T
+Qout(idIqai)    == T
+Qout(idIqio)    == T
+Qout(idIqi2)    == T
+Qout(idIsao)    == T
+Qout(idIsio)    == T
+Qout(idIwsni)   == T
+Qout(idIsMr)    == T
+Qout(idIsTs)    == T
+Qout(idIsUs)    == T
+Qout(idIsTb)    == T
+Qout(idIsSb)    == T
+Qout(idIsDrft)  == T
+Qout(idIsSOFs)  == T
+Qout(idIsSOFh)  == T
+
+! Logical switches (TRUE/FALSE) to activate writing of ice prognostic
+! variables into STATION output file.
+
+Sout(idIuice)   == T
+Sout(idIvice)   == T
+Sout(idIuiceE)  == T
+Sout(idIviceN)  == T
+Sout(idIaice)   == T
+Sout(idIhice)   == T
+Sout(idIhsno)   == T
+Sout(idIagei)   == T
+Sout(idItice)   == T
+Sout(idItmid)   == T
+Sout(idIt2ic)   == T
+Sout(idIsg11)   == T
+Sout(idIsg12)   == T
+Sout(idIsg22)   == T
+Sout(idIutau)   == T
+Sout(idImchu)   == T
+Sout(idIt0mk)   == T
+Sout(idIs0mk)   == T
+Sout(idImflx)   == T
+Sout(idIwfr)    == T
+Sout(idIwai)    == T
+Sout(idIwao)    == T
+Sout(idIwio)    == T
+Sout(idIwro)    == T
+Sout(idIwdiv)   == T
+Sout(idIalbO)   == T
+Sout(idIalbI)   == T
+Sout(idIfrsw)   == T
+Sout(idIqswi)   == T
+Sout(idIqlwi)   == T
+Sout(idIqlai)   == T
+Sout(idIqsei)   == T
+Sout(idIqswl)   == T
+Sout(idIqlwl)   == T
+Sout(idIqlwa)   == T
+Sout(idIqswa)   == T
+Sout(idIqswo)   == T
+Sout(idIqao)    == T
+Sout(idIqai)    == T
+Sout(idIqio)    == T
+Sout(idIqi2)    == T
+Sout(idIsao)    == T
+Sout(idIsio)    == T
+Sout(idIwsni)   == T
+Sout(idIsMr)    == T
+Sout(idIsTs)    == T
+Sout(idIsUs)    == T
+Sout(idIsTb)    == T
+Sout(idIsSb)    == T
+Sout(idIsDrft)  == T
+Sout(idIsSOFs)  == T
+Sout(idIsSOFh)  == T
